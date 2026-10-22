@@ -1,0 +1,666 @@
+openapi: 3.0.3
+info:
+  title: Revisatec MS1 Core API
+  version: 1.0.0
+  description: API académica para cursos, grupos y eventos de calendario.
+servers:
+  - url: /
+    description: Base URL del servicio o de APIM
+security:
+  - apimSubscriptionKey: []
+tags:
+  - name: Courses
+  - name: Groups
+  - name: Calendar
+paths:
+  /courses:
+    get:
+      tags: [Courses]
+      summary: Lista cursos
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Search'
+      responses:
+        '200':
+          description: Página de cursos.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageResult'
+              examples:
+                courses:
+                  value:
+                    totalRecords: 1
+                    page: 1
+                    pageSize: 10
+                    items:
+                      - id: 1
+                        name: Matemática
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    post:
+      tags: [Courses]
+      summary: Crea curso
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseInput'
+            example:
+              name: Matemática
+      responses:
+        '201':
+          description: Curso creado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+              example:
+                id: 1
+                name: Matemática
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /courses/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Courses]
+      summary: Obtiene curso por ID
+      responses:
+        '200':
+          description: Curso encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+              example:
+                id: 1
+                name: Matemática
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: Curso no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Curso con id 99 no encontrado
+    put:
+      tags: [Courses]
+      summary: Actualiza curso
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseInput'
+            example:
+              name: Matemática avanzada
+      responses:
+        '200':
+          description: Curso actualizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+              example:
+                id: 1
+                name: Matemática avanzada
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: Curso no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Curso con id 99 no encontrado
+    delete:
+      tags: [Courses]
+      summary: Elimina curso
+      responses:
+        '200':
+          description: Curso eliminado; respuesta sin cuerpo.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: Curso no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Curso con id 99 no encontrado
+  /groups:
+    get:
+      tags: [Groups]
+      summary: Lista grupos
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Search'
+      responses:
+        '200':
+          description: Página de grupos, incluyendo avance y estado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageResult'
+              examples:
+                groups:
+                  value:
+                    totalRecords: 1
+                    page: 1
+                    pageSize: 10
+                    items:
+                      - id: 3
+                        name: Grupo A
+                        repoUrl: https://github.com/example/group-a
+                        avance: 40
+                        estado: En progreso
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    post:
+      tags: [Groups]
+      summary: Crea grupo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupCreate'
+            example:
+              name: Grupo A
+              repoUrl: https://github.com/example/group-a
+              avance: 40
+              estado: En progreso
+      responses:
+        '201':
+          description: Grupo creado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+              example:
+                id: 3
+                name: Grupo A
+                repoUrl: https://github.com/example/group-a
+                avance: 40
+                estado: En progreso
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /groups/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      tags: [Groups]
+      summary: Obtiene grupo por ID
+      responses:
+        '200':
+          description: Grupo encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+              example:
+                id: 3
+                name: Grupo A
+                repoUrl: https://github.com/example/group-a
+                avance: 40
+                estado: En progreso
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: Grupo no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Grupo con id 99 no encontrado
+    put:
+      tags: [Groups]
+      summary: Actualiza grupo
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupUpdate'
+            example:
+              name: Grupo A actualizado
+              repoUrl: https://github.com/example/group-a
+              avance: 55
+              estado: En progreso
+      responses:
+        '200':
+          description: Grupo actualizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+              example:
+                id: 3
+                name: Grupo A actualizado
+                repoUrl: https://github.com/example/group-a
+                avance: 55
+                estado: En progreso
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: Grupo no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Grupo con id 99 no encontrado
+    delete:
+      tags: [Groups]
+      summary: Elimina grupo
+      responses:
+        '200':
+          description: Grupo eliminado; respuesta sin cuerpo.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: Grupo no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Grupo con id 99 no encontrado
+  /calendar/events:
+    get:
+      tags: [Calendar]
+      summary: Lista eventos del calendario
+      description: Ordena por date ascendente; una página fuera del rango devuelve 400.
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Search'
+      responses:
+        '200':
+          description: Página de eventos ordenados por fecha.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PageResult'
+              examples:
+                events:
+                  value:
+                    totalRecords: 1
+                    page: 1
+                    pageSize: 10
+                    items:
+                      - id: 5
+                        title: Entrega final
+                        date: 1792670400000
+                        audience: Todos los grupos
+                        type: blue
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    post:
+      tags: [Calendar]
+      summary: Crea evento
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CalendarEventCreate'
+            example:
+              title: Entrega final
+              date: 1792670400000
+              audience: Todos los grupos
+              type: blue
+      responses:
+        '201':
+          description: Evento creado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalendarEvent'
+              example:
+                id: 5
+                title: Entrega final
+                date: 1792670400000
+                audience: Todos los grupos
+                type: blue
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /calendar/events/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    put:
+      tags: [Calendar]
+      summary: Actualiza evento
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CalendarEventUpdate'
+            example:
+              title: Entrega final actualizada
+              date: 1792756800000
+              audience: Todos los grupos
+              type: amber
+      responses:
+        '200':
+          description: Evento actualizado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalendarEvent'
+              example:
+                id: 5
+                title: Entrega final actualizada
+                date: 1792756800000
+                audience: Todos los grupos
+                type: amber
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: Recurso no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Recurso no encontrado
+    delete:
+      tags: [Calendar]
+      summary: Elimina evento
+      responses:
+        '200':
+          description: Evento eliminado.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [message]
+                properties:
+                  message:
+                    type: string
+              example:
+                message: Evento eliminado
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          description: Recurso no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Recurso no encontrado
+components:
+  securitySchemes:
+    apimSubscriptionKey:
+      type: apiKey
+      in: header
+      name: Ocp-Apim-Subscription-Key
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      description: Identificador del recurso.
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+    Page:
+      name: page
+      in: query
+      required: false
+      description: Número de página, inicia en 1.
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+      example: 1
+    PageSize:
+      name: pageSize
+      in: query
+      required: false
+      description: Cantidad de resultados por página.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 10
+      example: 10
+    Search:
+      name: search
+      in: query
+      required: false
+      description: Búsqueda sin distinguir mayúsculas; por nombre o título.
+      schema:
+        type: string
+        default: ''
+      example: final
+  responses:
+    BadRequest:
+      description: Solicitud o validación inválida.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          examples:
+            invalid:
+              value:
+                error: Cuerpo de solicitud inválido
+            calendarBody:
+              value:
+                error: Solicitud inválida
+            validation:
+              value:
+                error: El nombre no puede estar vacío
+            outOfRange:
+              value:
+                error: page está fuera del rango disponible
+  schemas:
+    Course:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          minLength: 1
+          example: Matemática
+    CourseInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          example: Matemática
+    Group:
+      type: object
+      required: [id, name, repoUrl, avance, estado]
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 3
+        name:
+          type: string
+          minLength: 1
+          example: Grupo A
+        repoUrl:
+          type: string
+          format: uri
+          description: URL absoluta con esquema http o https.
+          example: https://github.com/example/group-a
+        avance:
+          type: integer
+          minimum: 0
+          maximum: 100
+          default: 0
+          example: 40
+        estado:
+          type: string
+          enum: [Pendiente, En progreso, Completado]
+          default: Pendiente
+          example: En progreso
+    GroupCreate:
+      type: object
+      required: [name, repoUrl]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          example: Grupo A
+        repoUrl:
+          type: string
+          format: uri
+          description: URL absoluta con esquema http o https.
+          example: https://github.com/example/group-a
+        avance:
+          type: integer
+          minimum: 0
+          maximum: 100
+          default: 0
+          example: 40
+        estado:
+          type: string
+          enum: [Pendiente, En progreso, Completado]
+          default: Pendiente
+          example: En progreso
+    GroupUpdate:
+      type: object
+      required: [name, repoUrl, avance, estado]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          example: Grupo A
+        repoUrl:
+          type: string
+          format: uri
+          description: URL absoluta con esquema http o https.
+          example: https://github.com/example/group-a
+        avance:
+          type: integer
+          minimum: 0
+          maximum: 100
+          example: 40
+        estado:
+          type: string
+          enum: [Pendiente, En progreso, Completado]
+          example: En progreso
+    CalendarEvent:
+      type: object
+      required: [id, title, date, audience, type]
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 5
+        title:
+          type: string
+          minLength: 1
+          example: Entrega final
+        date:
+          type: integer
+          format: int64
+          minimum: 1
+          description: Epoch en milisegundos; no se convierte de zona horaria.
+          example: 1792670400000
+        audience:
+          type: string
+          minLength: 1
+          example: Todos los grupos
+        type:
+          type: string
+          enum: [blue, green, amber]
+          default: blue
+          example: blue
+    CalendarEventCreate:
+      type: object
+      required: [title, date, audience]
+      properties:
+        title:
+          type: string
+          minLength: 1
+          example: Entrega final
+        date:
+          type: integer
+          format: int64
+          minimum: 1
+          description: Epoch en milisegundos.
+          example: 1792670400000
+        audience:
+          type: string
+          minLength: 1
+          example: Todos los grupos
+        type:
+          type: string
+          enum: [blue, green, amber]
+          default: blue
+          example: blue
+    CalendarEventUpdate:
+      type: object
+      required: [title, date, audience, type]
+      properties:
+        title:
+          type: string
+          minLength: 1
+          example: Entrega final
+        date:
+          type: integer
+          format: int64
+          minimum: 1
+          description: Epoch en milisegundos.
+          example: 1792670400000
+        audience:
+          type: string
+          minLength: 1
+          example: Todos los grupos
+        type:
+          type: string
+          enum: [blue, green, amber]
+          example: blue
+    PageResult:
+      type: object
+      required: [totalRecords, page, pageSize, items]
+      properties:
+        totalRecords:
+          type: integer
+          format: int64
+          example: 1
+        page:
+          type: integer
+          minimum: 1
+          example: 1
+        pageSize:
+          type: integer
+          minimum: 1
+          maximum: 100
+          example: 10
+        items:
+          type: array
+          items:
+            oneOf:
+              - $ref: '#/components/schemas/Course'
+              - $ref: '#/components/schemas/Group'
+              - $ref: '#/components/schemas/CalendarEvent'
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+          example: Solicitud inválida
