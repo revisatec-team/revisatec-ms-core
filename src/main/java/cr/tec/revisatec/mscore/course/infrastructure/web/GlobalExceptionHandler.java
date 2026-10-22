@@ -1,6 +1,7 @@
 package cr.tec.revisatec.mscore.course.infrastructure.web;
 
 import cr.tec.revisatec.mscore.course.domain.CourseNotFoundException;
+import cr.tec.revisatec.mscore.group.domain.GroupNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,14 +21,24 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(exception.getMessage()));
     }
 
+    @ExceptionHandler(GroupNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleGroupNotFound(GroupNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(exception.getMessage()));
+    }
+
     @ExceptionHandler({
             IllegalArgumentException.class,
             ConstraintViolationException.class,
-            HttpMessageNotReadableException.class,
             MethodArgumentTypeMismatchException.class
     })
     public ResponseEntity<ErrorResponse> handleBadRequest(Exception exception) {
         return ResponseEntity.badRequest().body(new ErrorResponse(exception.getMessage()));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleUnreadableBody(HttpMessageNotReadableException exception) {
+        return ResponseEntity.badRequest().body(new ErrorResponse("Cuerpo de solicitud inválido"));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
