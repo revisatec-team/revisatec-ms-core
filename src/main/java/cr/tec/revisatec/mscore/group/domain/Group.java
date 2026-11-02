@@ -4,7 +4,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Set;
 
-public record Group(Long id, String name, String repoUrl, int avance, String estado) {
+public record Group(Long id, String name, String repoUrl, int avance, String estado, Long courseId) {
 
     private static final Set<String> VALID_STATES = Set.of("Pendiente", "En progreso", "Completado");
 

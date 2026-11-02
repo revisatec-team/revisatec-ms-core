@@ -13,5 +13,6 @@ public record GroupRequestDto(
         Integer avance,
         @Pattern(regexp = "Pendiente|En progreso|Completado",
                 message = "estado debe ser Pendiente, En progreso o Completado")
-        String estado) {
+        String estado,
+        Long courseId) {
 }

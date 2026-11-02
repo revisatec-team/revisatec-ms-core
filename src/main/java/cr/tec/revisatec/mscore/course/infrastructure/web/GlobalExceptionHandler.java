@@ -1,6 +1,7 @@
 package cr.tec.revisatec.mscore.course.infrastructure.web;
 
 import cr.tec.revisatec.mscore.course.domain.CourseNotFoundException;
+import cr.tec.revisatec.mscore.course.domain.CourseAssociationNotFoundException;
 import cr.tec.revisatec.mscore.group.domain.GroupNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,13 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(CourseNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(CourseNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(exception.getMessage()));
+    }
+
+    @ExceptionHandler(CourseAssociationNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleAssociatedCourseNotFound(
+            CourseAssociationNotFoundException exception) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ErrorResponse(exception.getMessage()));
     }

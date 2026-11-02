@@ -19,11 +19,18 @@ public class GroupRepositoryAdapter implements GroupRepositoryPort {
     }
 
     @Override
-    public PageResult<Group> findAll(int page, int pageSize, String search) {
+    public PageResult<Group> findAll(int page, int pageSize, String search, Long courseId) {
         PageRequest pageable = PageRequest.of(page - 1, pageSize);
-        Page<GroupEntity> result = search.isBlank()
-                ? repository.findAll(pageable)
-                : repository.findByNameContainingIgnoreCase(search, pageable);
+        Page<GroupEntity> result;
+        if (courseId == null) {
+            result = search.isBlank()
+                    ? repository.findAll(pageable)
+                    : repository.findByNameContainingIgnoreCase(search, pageable);
+        } else {
+            result = search.isBlank()
+                    ? repository.findByCourseId(courseId, pageable)
+                    : repository.findByNameContainingIgnoreCaseAndCourseId(search, courseId, pageable);
+        }
         return new PageResult<>(
                 result.getTotalElements(),
                 page,
@@ -39,7 +46,7 @@ public class GroupRepositoryAdapter implements GroupRepositoryPort {
     @Override
     public Group save(Group group) {
         GroupEntity entity = repository.save(new GroupEntity(
-                group.id(), group.name(), group.repoUrl(), group.avance(), group.estado()));
+                group.id(), group.name(), group.repoUrl(), group.avance(), group.estado(), group.courseId()));
         return toDomain(entity);
     }
 
@@ -49,6 +56,8 @@ public class GroupRepositoryAdapter implements GroupRepositoryPort {
     }
 
     private static Group toDomain(GroupEntity entity) {
-        return new Group(entity.getId(), entity.getName(), entity.getRepoUrl(), entity.getAvance(), entity.getEstado());
+        return new Group(
+                entity.getId(), entity.getName(), entity.getRepoUrl(),
+                entity.getAvance(), entity.getEstado(), entity.getCourseId());
     }
 }

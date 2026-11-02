@@ -143,6 +143,7 @@ paths:
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PageSize'
         - $ref: '#/components/parameters/Search'
+        - $ref: '#/components/parameters/CourseId'
       responses:
         '200':
           description: Página de grupos, incluyendo avance y estado.
@@ -162,6 +163,7 @@ paths:
                         repoUrl: https://github.com/example/group-a
                         avance: 40
                         estado: En progreso
+                        courseId: 1
         '400':
           $ref: '#/components/responses/BadRequest'
     post:
@@ -178,6 +180,7 @@ paths:
               repoUrl: https://github.com/example/group-a
               avance: 40
               estado: En progreso
+              courseId: 1
       responses:
         '201':
           description: Grupo creado.
@@ -191,8 +194,17 @@ paths:
                 repoUrl: https://github.com/example/group-a
                 avance: 40
                 estado: En progreso
+                courseId: 1
         '400':
           $ref: '#/components/responses/BadRequest'
+        '404':
+          description: Curso asociado no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Curso no encontrado
   /groups/{id}:
     parameters:
       - $ref: '#/components/parameters/Id'
@@ -212,6 +224,7 @@ paths:
                 repoUrl: https://github.com/example/group-a
                 avance: 40
                 estado: En progreso
+                courseId: 1
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -236,6 +249,7 @@ paths:
               repoUrl: https://github.com/example/group-a
               avance: 55
               estado: En progreso
+              courseId: 1
       responses:
         '200':
           description: Grupo actualizado.
@@ -249,16 +263,22 @@ paths:
                 repoUrl: https://github.com/example/group-a
                 avance: 55
                 estado: En progreso
+                courseId: 1
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
-          description: Grupo no encontrado.
+          description: Grupo o curso asociado no encontrado.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-              example:
-                error: Grupo con id 99 no encontrado
+              examples:
+                group:
+                  value:
+                    error: Grupo con id 99 no encontrado
+                course:
+                  value:
+                    error: Curso no encontrado
     delete:
       tags: [Groups]
       summary: Elimina grupo
@@ -284,6 +304,7 @@ paths:
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PageSize'
         - $ref: '#/components/parameters/Search'
+        - $ref: '#/components/parameters/CourseId'
       responses:
         '200':
           description: Página de eventos ordenados por fecha.
@@ -303,6 +324,7 @@ paths:
                         date: 1792670400000
                         audience: Todos los grupos
                         type: blue
+                        courseId: 1
         '400':
           $ref: '#/components/responses/BadRequest'
     post:
@@ -319,6 +341,7 @@ paths:
               date: 1792670400000
               audience: Todos los grupos
               type: blue
+              courseId: 1
       responses:
         '201':
           description: Evento creado.
@@ -332,8 +355,17 @@ paths:
                 date: 1792670400000
                 audience: Todos los grupos
                 type: blue
+                courseId: 1
         '400':
           $ref: '#/components/responses/BadRequest'
+        '404':
+          description: Curso asociado no encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Curso no encontrado
   /calendar/events/{id}:
     parameters:
       - $ref: '#/components/parameters/Id'
@@ -351,6 +383,7 @@ paths:
               date: 1792756800000
               audience: Todos los grupos
               type: amber
+              courseId: 1
       responses:
         '200':
           description: Evento actualizado.
@@ -364,16 +397,22 @@ paths:
                 date: 1792756800000
                 audience: Todos los grupos
                 type: amber
+                courseId: 1
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
-          description: Recurso no encontrado.
+          description: Evento o curso asociado no encontrado.
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-              example:
-                error: Recurso no encontrado
+              examples:
+                event:
+                  value:
+                    error: Recurso no encontrado
+                course:
+                  value:
+                    error: Curso no encontrado
     delete:
       tags: [Calendar]
       summary: Elimina evento
@@ -446,6 +485,16 @@ components:
         type: string
         default: ''
       example: final
+    CourseId:
+      name: courseId
+      in: query
+      required: false
+      description: Filtra los resultados por curso.
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+      example: 1
   responses:
     BadRequest:
       description: Solicitud o validación inválida.
@@ -489,7 +538,7 @@ components:
           example: Matemática
     Group:
       type: object
-      required: [id, name, repoUrl, avance, estado]
+      required: [id, name, repoUrl, avance, estado, courseId]
       properties:
         id:
           type: integer
@@ -515,9 +564,14 @@ components:
           enum: [Pendiente, En progreso, Completado]
           default: Pendiente
           example: En progreso
+        courseId:
+          type: integer
+          format: int64
+          minimum: 1
+          example: 1
     GroupCreate:
       type: object
-      required: [name, repoUrl]
+      required: [name, repoUrl, courseId]
       properties:
         name:
           type: string
@@ -539,6 +593,11 @@ components:
           enum: [Pendiente, En progreso, Completado]
           default: Pendiente
           example: En progreso
+        courseId:
+          type: integer
+          format: int64
+          minimum: 1
+          example: 1
     GroupUpdate:
       type: object
       required: [name, repoUrl, avance, estado]
@@ -561,9 +620,15 @@ components:
           type: string
           enum: [Pendiente, En progreso, Completado]
           example: En progreso
+        courseId:
+          type: integer
+          format: int64
+          minimum: 1
+          description: Si se omite, se conserva el curso actual.
+          example: 1
     CalendarEvent:
       type: object
-      required: [id, title, date, audience, type]
+      required: [id, title, date, audience, type, courseId]
       properties:
         id:
           type: integer
@@ -588,9 +653,14 @@ components:
           enum: [blue, green, amber]
           default: blue
           example: blue
+        courseId:
+          type: integer
+          format: int64
+          minimum: 1
+          example: 1
     CalendarEventCreate:
       type: object
-      required: [title, date, audience]
+      required: [title, date, audience, courseId]
       properties:
         title:
           type: string
@@ -611,6 +681,11 @@ components:
           enum: [blue, green, amber]
           default: blue
           example: blue
+        courseId:
+          type: integer
+          format: int64
+          minimum: 1
+          example: 1
     CalendarEventUpdate:
       type: object
       required: [title, date, audience, type]
@@ -633,6 +708,12 @@ components:
           type: string
           enum: [blue, green, amber]
           example: blue
+        courseId:
+          type: integer
+          format: int64
+          minimum: 1
+          description: Si se omite, se conserva el curso actual.
+          example: 1
     PageResult:
       type: object
       required: [totalRecords, page, pageSize, items]

@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public interface CalendarEventRepositoryPort {
 
-    PageResult<CalendarEvent> findAll(int page, int pageSize, String search);
+    PageResult<CalendarEvent> findAll(int page, int pageSize, String search, Long courseId);
 
     Optional<CalendarEvent> findById(Long id);
 

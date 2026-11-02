@@ -1,6 +1,7 @@
 package cr.tec.revisatec.mscore.calendar.infrastructure.web;
 
 import cr.tec.revisatec.mscore.calendar.domain.CalendarEventNotFoundException;
+import cr.tec.revisatec.mscore.course.domain.CourseAssociationNotFoundException;
 import cr.tec.revisatec.mscore.course.infrastructure.web.GlobalExceptionHandler.ErrorResponse;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.core.Ordered;
@@ -22,6 +23,13 @@ public class CalendarEventExceptionHandler {
     public ResponseEntity<ErrorResponse> handleNotFound(CalendarEventNotFoundException exception) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ErrorResponse("Recurso no encontrado"));
+    }
+
+    @ExceptionHandler(CourseAssociationNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleAssociatedCourseNotFound(
+            CourseAssociationNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(exception.getMessage()));
     }
 
     @ExceptionHandler({

@@ -9,5 +9,6 @@ public record CalendarEventRequestDto(
         @Positive(message = "date debe ser un Epoch en milisegundos mayor que 0") Long date,
         @NotBlank(message = "La audiencia es obligatoria") String audience,
         @Pattern(regexp = "blue|green|amber", message = "type debe ser blue, green o amber")
-        String type) {
+        String type,
+        Long courseId) {
 }
