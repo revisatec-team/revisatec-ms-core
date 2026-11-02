@@ -2,7 +2,7 @@ package cr.tec.revisatec.mscore.calendar.domain;
 
 import java.util.Set;
 
-public record CalendarEvent(Long id, String title, Long date, String audience, String type) {
+public record CalendarEvent(Long id, String title, Long date, String audience, String type, Long courseId) {
 
     private static final Set<String> VALID_TYPES = Set.of("blue", "green", "amber");
 

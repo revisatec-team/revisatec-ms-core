@@ -7,4 +7,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface GroupJpaRepository extends JpaRepository<GroupEntity, Long> {
 
     Page<GroupEntity> findByNameContainingIgnoreCase(String name, Pageable pageable);
+
+    Page<GroupEntity> findByCourseId(Long courseId, Pageable pageable);
+
+    Page<GroupEntity> findByNameContainingIgnoreCaseAndCourseId(
+            String name, Long courseId, Pageable pageable);
 }

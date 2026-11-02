@@ -19,11 +19,19 @@ public class CalendarEventRepositoryAdapter implements CalendarEventRepositoryPo
     }
 
     @Override
-    public PageResult<CalendarEvent> findAll(int page, int pageSize, String search) {
+    public PageResult<CalendarEvent> findAll(int page, int pageSize, String search, Long courseId) {
         PageRequest pageable = PageRequest.of(page - 1, pageSize);
-        Page<CalendarEventEntity> result = search.isBlank()
-                ? repository.findAllByOrderByDateAsc(pageable)
-                : repository.findByTitleContainingIgnoreCaseOrderByDateAsc(search, pageable);
+        Page<CalendarEventEntity> result;
+        if (courseId == null) {
+            result = search.isBlank()
+                    ? repository.findAllByOrderByDateAsc(pageable)
+                    : repository.findByTitleContainingIgnoreCaseOrderByDateAsc(search, pageable);
+        } else {
+            result = search.isBlank()
+                    ? repository.findByCourseIdOrderByDateAsc(courseId, pageable)
+                    : repository.findByTitleContainingIgnoreCaseAndCourseIdOrderByDateAsc(
+                            search, courseId, pageable);
+        }
         return new PageResult<>(
                 result.getTotalElements(),
                 page,
@@ -39,7 +47,7 @@ public class CalendarEventRepositoryAdapter implements CalendarEventRepositoryPo
     @Override
     public CalendarEvent save(CalendarEvent event) {
         CalendarEventEntity entity = repository.save(new CalendarEventEntity(
-                event.id(), event.title(), event.date(), event.audience(), event.type()));
+                event.id(), event.title(), event.date(), event.audience(), event.type(), event.courseId()));
         return toDomain(entity);
     }
 
@@ -50,6 +58,7 @@ public class CalendarEventRepositoryAdapter implements CalendarEventRepositoryPo
 
     private static CalendarEvent toDomain(CalendarEventEntity entity) {
         return new CalendarEvent(
-                entity.getId(), entity.getTitle(), entity.getDate(), entity.getAudience(), entity.getType());
+                entity.getId(), entity.getTitle(), entity.getDate(),
+                entity.getAudience(), entity.getType(), entity.getCourseId());
     }
 }

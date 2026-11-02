@@ -9,4 +9,9 @@ public interface CalendarEventJpaRepository extends JpaRepository<CalendarEventE
     Page<CalendarEventEntity> findAllByOrderByDateAsc(Pageable pageable);
 
     Page<CalendarEventEntity> findByTitleContainingIgnoreCaseOrderByDateAsc(String title, Pageable pageable);
+
+    Page<CalendarEventEntity> findByCourseIdOrderByDateAsc(Long courseId, Pageable pageable);
+
+    Page<CalendarEventEntity> findByTitleContainingIgnoreCaseAndCourseIdOrderByDateAsc(
+            String title, Long courseId, Pageable pageable);
 }

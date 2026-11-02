@@ -27,15 +27,19 @@ public class CalendarEventEntity {
     @Column(nullable = false)
     private String type;
 
+    @Column(nullable = true)
+    private Long courseId;
+
     protected CalendarEventEntity() {
     }
 
-    public CalendarEventEntity(Long id, String title, Long date, String audience, String type) {
+    public CalendarEventEntity(Long id, String title, Long date, String audience, String type, Long courseId) {
         this.id = id;
         this.title = title;
         this.date = date;
         this.audience = audience;
         this.type = type;
+        this.courseId = courseId;
     }
 
     public Long getId() {
@@ -56,5 +60,9 @@ public class CalendarEventEntity {
 
     public String getType() {
         return type;
+    }
+
+    public Long getCourseId() {
+        return courseId;
     }
 }

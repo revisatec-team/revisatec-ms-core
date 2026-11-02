@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public interface GroupRepositoryPort {
 
-    PageResult<Group> findAll(int page, int pageSize, String search);
+    PageResult<Group> findAll(int page, int pageSize, String search, Long courseId);
 
     Optional<Group> findById(Long id);
 

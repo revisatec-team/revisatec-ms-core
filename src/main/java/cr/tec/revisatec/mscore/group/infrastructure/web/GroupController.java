@@ -32,8 +32,9 @@ public class GroupController {
     public PageResult<GroupDto> listGroups(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int pageSize,
-            @RequestParam(defaultValue = "") String search) {
-        PageResult<Group> result = groupUseCase.listGroups(page, pageSize, search);
+            @RequestParam(defaultValue = "") String search,
+            @RequestParam(required = false) Long courseId) {
+        PageResult<Group> result = groupUseCase.listGroups(page, pageSize, search, courseId);
         List<GroupDto> items = result.items().stream().map(GroupDto::from).toList();
         return new PageResult<>(result.totalRecords(), result.page(), result.pageSize(), items);
     }
@@ -41,7 +42,7 @@ public class GroupController {
     @PostMapping
     public ResponseEntity<GroupDto> createGroup(@Valid @RequestBody GroupRequestDto request) {
         Group group = groupUseCase.createGroup(
-                request.name(), request.repoUrl(), request.avance(), request.estado());
+                request.name(), request.repoUrl(), request.avance(), request.estado(), request.courseId());
         return ResponseEntity.status(HttpStatus.CREATED).body(GroupDto.from(group));
     }
 
@@ -53,7 +54,7 @@ public class GroupController {
     @PutMapping("/{id}")
     public GroupDto updateGroup(@PathVariable Long id, @Valid @RequestBody GroupRequestDto request) {
         return GroupDto.from(groupUseCase.updateGroup(
-                id, request.name(), request.repoUrl(), request.avance(), request.estado()));
+                id, request.name(), request.repoUrl(), request.avance(), request.estado(), request.courseId()));
     }
 
     @DeleteMapping("/{id}")

@@ -32,8 +32,9 @@ public class CalendarEventController {
     public PageResult<CalendarEventDto> listEvents(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int pageSize,
-            @RequestParam(defaultValue = "") String search) {
-        PageResult<CalendarEvent> result = eventUseCase.listEvents(page, pageSize, search);
+            @RequestParam(defaultValue = "") String search,
+            @RequestParam(required = false) Long courseId) {
+        PageResult<CalendarEvent> result = eventUseCase.listEvents(page, pageSize, search, courseId);
         List<CalendarEventDto> items = result.items().stream().map(CalendarEventDto::from).toList();
         return new PageResult<>(result.totalRecords(), result.page(), result.pageSize(), items);
     }
@@ -41,7 +42,7 @@ public class CalendarEventController {
     @PostMapping
     public ResponseEntity<CalendarEventDto> createEvent(@Valid @RequestBody CalendarEventRequestDto request) {
         CalendarEvent event = eventUseCase.createEvent(
-                request.title(), request.date(), request.audience(), request.type());
+                request.title(), request.date(), request.audience(), request.type(), request.courseId());
         return ResponseEntity.status(HttpStatus.CREATED).body(CalendarEventDto.from(event));
     }
 
@@ -50,7 +51,7 @@ public class CalendarEventController {
             @PathVariable Long id,
             @Valid @RequestBody CalendarEventRequestDto request) {
         return CalendarEventDto.from(eventUseCase.updateEvent(
-                id, request.title(), request.date(), request.audience(), request.type()));
+                id, request.title(), request.date(), request.audience(), request.type(), request.courseId()));
     }
 
     @DeleteMapping("/{id}")

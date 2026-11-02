@@ -27,15 +27,19 @@ public class GroupEntity {
     @Column(nullable = false)
     private String estado;
 
+    @Column(nullable = true)
+    private Long courseId;
+
     protected GroupEntity() {
     }
 
-    public GroupEntity(Long id, String name, String repoUrl, int avance, String estado) {
+    public GroupEntity(Long id, String name, String repoUrl, int avance, String estado, Long courseId) {
         this.id = id;
         this.name = name;
         this.repoUrl = repoUrl;
         this.avance = avance;
         this.estado = estado;
+        this.courseId = courseId;
     }
 
     public Long getId() {
@@ -56,5 +60,9 @@ public class GroupEntity {
 
     public String getEstado() {
         return estado;
+    }
+
+    public Long getCourseId() {
+        return courseId;
     }
 }
