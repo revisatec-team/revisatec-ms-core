@@ -1,0 +1,1564 @@
+openapi: 3.0.3
+info:
+  title: RevisaTEC API
+  version: 2.0.0
+  description: 'API de RevisaTEC publicada en Azure API Management. Todo el tráfico entra por APIM con la clave
+    de suscripción y llega a tres microservicios: MS1 (cursos, grupos y calendario), MS2 (rúbrica, análisis, retroalimentación
+    e inconvenientes) y MS3 (notificaciones). Las fechas se intercambian en Epoch (milisegundos, UTC), las listas
+    incluyen totalRecords, page, pageSize e items, y los errores tienen la forma { "error": "mensaje" }.'
+servers:
+- url: https://apimanagementcristopherarayavega.azure-api.net/revisatec
+  description: APIM (único punto de entrada)
+security:
+- subscriptionKey: []
+tags:
+- name: MS1 · Courses
+- name: MS1 · Groups
+- name: MS1 · Calendar
+- name: MS2 · Course configuration
+- name: MS2 · Group analysis
+- name: MS2 · Feedback
+- name: MS2 · Reports
+- name: MS3 · Notifications
+paths:
+  /courses:
+    get:
+      tags:
+      - MS1 · Courses
+      summary: Listar cursos
+      operationId: listCourses
+      parameters:
+      - name: page
+        in: query
+        required: false
+        description: Número de página (desde 1)
+        schema:
+          type: integer
+          default: 1
+          minimum: 1
+      - name: pageSize
+        in: query
+        required: false
+        description: Elementos por página (máximo 100)
+        schema:
+          type: integer
+          default: 10
+          minimum: 1
+          maximum: 100
+      - name: search
+        in: query
+        required: false
+        description: Filtro de texto por nombre o título
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Lista paginada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoursePage'
+        '400':
+          description: Parámetros inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+      - MS1 · Courses
+      summary: Crear curso
+      operationId: createCourse
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseInput'
+      responses:
+        '201':
+          description: Creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+        '400':
+          description: Datos inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /courses/{id}:
+    get:
+      tags:
+      - MS1 · Courses
+      summary: Obtener un curso
+      operationId: getCourse
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Identificador del curso
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+      responses:
+        '200':
+          description: Curso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+        '404':
+          description: Curso no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+      - MS1 · Courses
+      summary: Actualizar un curso
+      operationId: updateCourse
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Identificador del curso
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseInput'
+      responses:
+        '200':
+          description: Curso actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+        '400':
+          description: Datos inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Curso no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+      - MS1 · Courses
+      summary: Eliminar un curso
+      operationId: deleteCourse
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Identificador del curso
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+      responses:
+        '200':
+          description: Curso eliminado
+        '404':
+          description: Curso no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /groups:
+    get:
+      tags:
+      - MS1 · Groups
+      summary: Listar grupos
+      operationId: listGroups
+      parameters:
+      - name: page
+        in: query
+        required: false
+        description: Número de página (desde 1)
+        schema:
+          type: integer
+          default: 1
+          minimum: 1
+      - name: pageSize
+        in: query
+        required: false
+        description: Elementos por página (máximo 100)
+        schema:
+          type: integer
+          default: 10
+          minimum: 1
+          maximum: 100
+      - name: search
+        in: query
+        required: false
+        description: Filtro de texto por nombre o título
+        schema:
+          type: string
+      - name: courseId
+        in: query
+        required: false
+        description: Devuelve solo los elementos de este curso
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: Lista paginada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupPage'
+        '400':
+          description: Parámetros inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags:
+      - MS1 · Groups
+      summary: Crear grupo
+      operationId: createGroup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupCreate'
+      responses:
+        '201':
+          description: Creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+        '400':
+          description: Datos inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: El curso indicado en courseId no existe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /groups/{id}:
+    get:
+      tags:
+      - MS1 · Groups
+      summary: Obtener un grupo
+      operationId: getGroup
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Identificador del grupo
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+      responses:
+        '200':
+          description: Grupo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+        '404':
+          description: Grupo no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+      - MS1 · Groups
+      summary: Actualizar un grupo
+      operationId: updateGroup
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Identificador del grupo
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupUpdate'
+      responses:
+        '200':
+          description: Grupo actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+        '400':
+          description: Datos inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Grupo o curso no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+      - MS1 · Groups
+      summary: Eliminar un grupo
+      operationId: deleteGroup
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Identificador del grupo
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+      responses:
+        '200':
+          description: Grupo eliminado
+        '404':
+          description: Grupo no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /calendar/events:
+    get:
+      tags:
+      - MS1 · Calendar
+      summary: Listar eventos del calendario
+      operationId: listCalendarEvents
+      parameters:
+      - name: page
+        in: query
+        required: false
+        description: Número de página (desde 1)
+        schema:
+          type: integer
+          default: 1
+          minimum: 1
+      - name: pageSize
+        in: query
+        required: false
+        description: Elementos por página (máximo 100)
+        schema:
+          type: integer
+          default: 10
+          minimum: 1
+          maximum: 100
+      - name: search
+        in: query
+        required: false
+        description: Filtro de texto por nombre o título
+        schema:
+          type: string
+      - name: courseId
+        in: query
+        required: false
+        description: Devuelve solo los elementos de este curso
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: Lista paginada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalendarEventPage'
+        '400':
+          description: Parámetros inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      description: Ordena por date ascendente; una página fuera del rango devuelve 400.
+    post:
+      tags:
+      - MS1 · Calendar
+      summary: Crear evento
+      operationId: createCalendarEvent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CalendarEventCreate'
+      responses:
+        '201':
+          description: Creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalendarEvent'
+        '400':
+          description: Datos inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: El curso indicado en courseId no existe
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /calendar/events/{id}:
+    put:
+      tags:
+      - MS1 · Calendar
+      summary: Actualizar un evento
+      operationId: updateCalendarEvent
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Identificador del evento
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CalendarEventUpdate'
+      responses:
+        '200':
+          description: Evento actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalendarEvent'
+        '400':
+          description: Datos inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Evento o curso no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+      - MS1 · Calendar
+      summary: Eliminar un evento
+      operationId: deleteCalendarEvent
+      parameters:
+      - name: id
+        in: path
+        required: true
+        description: Identificador del evento
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+      responses:
+        '200':
+          description: Evento eliminado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '404':
+          description: Evento no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /courses/{id}/rubric:
+    parameters:
+    - $ref: '#/components/parameters/id'
+    get:
+      tags:
+      - MS2 · Course configuration
+      summary: Obtener rúbrica del curso
+      operationId: getRubric
+      responses:
+        '200':
+          description: Rúbrica
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rubric'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags:
+      - MS2 · Course configuration
+      summary: Reemplazar rúbrica del curso
+      operationId: updateRubric
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Rubric'
+      responses:
+        '200':
+          description: Rúbrica actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Rubric'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /courses/{id}/instructions:
+    parameters:
+    - $ref: '#/components/parameters/id'
+    get:
+      tags:
+      - MS2 · Course configuration
+      summary: Obtener indicaciones para la IA
+      operationId: getInstructions
+      responses:
+        '200':
+          description: Indicaciones
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Instructions'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags:
+      - MS2 · Course configuration
+      summary: Actualizar indicaciones para la IA
+      operationId: updateInstructions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Instructions'
+      responses:
+        '200':
+          description: Indicaciones actualizadas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Instructions'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /courses/{id}/scraping-config:
+    parameters:
+    - $ref: '#/components/parameters/id'
+    get:
+      tags:
+      - MS2 · Course configuration
+      summary: Obtener configuración de qué considerar del repositorio
+      operationId: getScrapingConfig
+      responses:
+        '200':
+          description: Configuración
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScrapingConfig'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags:
+      - MS2 · Course configuration
+      summary: Actualizar configuración de scraping
+      operationId: updateScrapingConfig
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ScrapingConfig'
+      responses:
+        '200':
+          description: Configuración actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScrapingConfig'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /groups/{id}/analysis:
+    parameters:
+    - $ref: '#/components/parameters/id'
+    get:
+      tags:
+      - MS2 · Group analysis
+      summary: Puntaje y evidencia del grupo
+      operationId: getGroupAnalysis
+      responses:
+        '200':
+          description: Análisis
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Analysis'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /groups/{id}/progress-summary:
+    parameters:
+    - $ref: '#/components/parameters/id'
+    get:
+      tags:
+      - MS2 · Group analysis
+      summary: Estado del avance por criterio
+      operationId: getProgressSummary
+      responses:
+        '200':
+          description: Síntesis de avance
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProgressSummary'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /groups/{id}/criteria:
+    parameters:
+    - $ref: '#/components/parameters/id'
+    get:
+      tags:
+      - MS2 · Group analysis
+      summary: Nivel de cumplimiento por criterio
+      operationId: getGroupCriteria
+      responses:
+        '200':
+          description: Cumplimiento por criterio
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  groupId:
+                    type: integer
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CriterionCompliance'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /groups/{id}/feedback:
+    parameters:
+    - $ref: '#/components/parameters/id'
+    get:
+      tags:
+      - MS2 · Feedback
+      summary: Obtener retroalimentación (versión IA y versión del profesor)
+      operationId: getFeedback
+      responses:
+        '200':
+          description: Retroalimentación
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feedback'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags:
+      - MS2 · Feedback
+      summary: Guardar la versión editada por el profesor
+      operationId: updateFeedback
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeedbackInput'
+      responses:
+        '200':
+          description: Retroalimentación actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feedback'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /groups/{id}/feedback/publish:
+    parameters:
+    - $ref: '#/components/parameters/id'
+    post:
+      tags:
+      - MS2 · Feedback
+      summary: Publicar la retroalimentación al estudiante
+      description: 'Marca la retroalimentación como publicada y emite el mensaje
+
+        FEEDBACK_PUBLISHED a la cola (ver queue-message.schema.json).
+
+        '
+      operationId: publishFeedback
+      responses:
+        '200':
+          description: Retroalimentación publicada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feedback'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /groups/{id}/direct-reviews:
+    parameters:
+    - $ref: '#/components/parameters/id'
+    get:
+      tags:
+      - MS2 · Feedback
+      summary: Listar revisiones directas del grupo (paginado)
+      operationId: listDirectReviews
+      parameters:
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/pageSize'
+      responses:
+        '200':
+          description: Lista paginada de revisiones directas
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/PageMeta'
+                - type: object
+                  properties:
+                    items:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/DirectReview'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    post:
+      tags:
+      - MS2 · Feedback
+      summary: Crear revisión directa fuera del flujo normal
+      operationId: createDirectReview
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DirectReviewInput'
+      responses:
+        '201':
+          description: Revisión creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DirectReview'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /groups/{id}/issues:
+    parameters:
+    - $ref: '#/components/parameters/id'
+    get:
+      tags:
+      - MS2 · Group analysis
+      summary: Inconvenientes detectados (paginado)
+      description: Puede emitir el mensaje ISSUE_DETECTED a la cola cuando detecta uno nuevo.
+      operationId: listGroupIssues
+      parameters:
+      - $ref: '#/components/parameters/page'
+      - $ref: '#/components/parameters/pageSize'
+      responses:
+        '200':
+          description: Lista paginada de inconvenientes
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/PageMeta'
+                - type: object
+                  properties:
+                    items:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Issue'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /groups/{id}/report:
+    parameters:
+    - $ref: '#/components/parameters/id'
+    get:
+      tags:
+      - MS2 · Reports
+      summary: Reporte del grupo
+      operationId: getGroupReport
+      responses:
+        '200':
+          description: Reporte
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Report'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /notifications:
+    get:
+      summary: Lista de notificaciones
+      description: Obtiene el historial de notificaciones paginado, ordenado cronológicamente descendente y con
+        búsqueda opcional.
+      parameters:
+      - name: page
+        in: query
+        description: Número de página (>= 1)
+        required: false
+        schema:
+          type: integer
+          default: 1
+          minimum: 1
+      - name: pageSize
+        in: query
+        description: Cantidad de elementos por página (1-100)
+        required: false
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+          maximum: 100
+      - name: search
+        in: query
+        description: Filtro de texto para título o mensaje
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Lista paginada de notificaciones obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationPage'
+        '400':
+          description: Parámetros de consulta inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+      - MS3 · Notifications
+  /notifications/{id}/read:
+    patch:
+      summary: Marcar notificación como leída
+      description: Actualiza el estado de una notificación individual a leída.
+      parameters:
+      - name: id
+        in: path
+        description: Identificador único del evento / notificación
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Notificación actualizada correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+        '400':
+          description: Identificador no válido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Notificación no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+      - MS3 · Notifications
+  /notifications/realtime-token:
+    get:
+      summary: Obtener URL y token para conexión en tiempo real
+      description: Genera una URL con token temporal para conectar el cliente WebSocket directamente a Azure Web
+        PubSub sin pasar por APIM.
+      responses:
+        '200':
+          description: URL de conexión WebSocket y fecha de expiración
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                example: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RealtimeTokenResponse'
+        '503':
+          description: Servicio de tiempo real no configurado o no disponible
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+      tags:
+      - MS3 · Notifications
+components:
+  securitySchemes:
+    subscriptionKey:
+      type: apiKey
+      in: header
+      name: Ocp-Apim-Subscription-Key
+      description: Clave de suscripción de APIM, obligatoria en todas las operaciones.
+  parameters:
+    id:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: integer
+    page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    pageSize:
+      name: pageSize
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 10
+  responses:
+    BadRequest:
+      description: Solicitud inválida
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Recurso no encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    Error:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          type: string
+    PageMeta:
+      type: object
+      required:
+      - totalRecords
+      - page
+      - pageSize
+      - items
+      properties:
+        totalRecords:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+    Rubric:
+      type: object
+      required:
+      - criteria
+      properties:
+        criteria:
+          type: array
+          items:
+            type: object
+            required:
+            - name
+            - weight
+            properties:
+              name:
+                type: string
+                example: Calidad de commits
+              weight:
+                type: number
+                example: 20
+        fileName:
+          type: string
+          description: Archivo de rúbrica interpretado (solo lectura)
+        interpretationStatus:
+          type: string
+          description: Texto del estado de interpretación por IA (solo lectura)
+    Instructions:
+      type: object
+      required:
+      - text
+      properties:
+        courseId:
+          type: integer
+        text:
+          type: string
+          description: Indicaciones para la IA
+        updatedAt:
+          type: integer
+          format: int64
+          description: Epoch ms
+    ScrapingConfig:
+      type: object
+      required:
+      - frequency
+      - minReviewers
+      properties:
+        frequency:
+          type: string
+          enum:
+          - hourly
+          - daily
+          - weekly
+        minReviewers:
+          type: integer
+          minimum: 1
+          example: 2
+        nextRunAt:
+          type: integer
+          format: int64
+          description: Próximo análisis (solo lectura). Epoch ms
+    Evidence:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum:
+          - pr
+          - commit
+        text:
+          type: string
+        author:
+          type: string
+        reviewer:
+          type: string
+          nullable: true
+        when:
+          type: integer
+          format: int64
+          description: Epoch ms
+    Analysis:
+      type: object
+      properties:
+        score:
+          type: number
+          example: 85
+        progress:
+          type: integer
+          example: 71
+        criteria:
+          type: array
+          items:
+            $ref: '#/components/schemas/CriterionScore'
+        evidence:
+          type: array
+          items:
+            $ref: '#/components/schemas/Evidence'
+      x-note: criteria usa name/score/max/percent/level/type como el front
+    CriterionCompliance:
+      type: object
+      properties:
+        criterionId:
+          type: string
+        name:
+          type: string
+        level:
+          type: string
+          enum:
+          - not_met
+          - partial
+          - met
+        score:
+          type: number
+      x-validar: no lo consume el front de la Fase I
+    ProgressSummary:
+      type: object
+      properties:
+        groupId:
+          type: integer
+        overall:
+          type: integer
+          minimum: 0
+          maximum: 100
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              criterionId:
+                type: string
+              status:
+                type: string
+                enum:
+                - on_track
+                - at_risk
+                - delayed
+              note:
+                type: string
+        generatedAt:
+          type: integer
+          format: int64
+          description: Epoch ms
+      x-validar: no lo consume el front de la Fase I
+    Feedback:
+      type: object
+      properties:
+        groupName:
+          type: string
+        deliveryTitle:
+          type: string
+          example: 'Entrega 2: Prototipo'
+        score:
+          type: number
+        ai:
+          type: string
+          description: Propuesta de la IA
+        professor:
+          type: string
+          description: Versión editable del profesor
+        status:
+          type: string
+          enum:
+          - draft
+          - published
+    DirectReviewInput:
+      type: object
+      required:
+      - note
+      properties:
+        note:
+          type: string
+    DirectReview:
+      allOf:
+      - $ref: '#/components/schemas/DirectReviewInput'
+      - type: object
+        properties:
+          id:
+            type: string
+          date:
+            type: integer
+            format: int64
+            description: Epoch ms
+    Issue:
+      type: object
+      properties:
+        id:
+          type: integer
+        groupId:
+          type: integer
+        groupName:
+          type: string
+        type:
+          type: string
+          example: Commits de prueba
+        description:
+          type: string
+        date:
+          type: integer
+          format: int64
+          description: Detectado. Epoch ms
+        status:
+          type: string
+          enum:
+          - Sin resolver
+          - Resuelto
+    Report:
+      type: object
+      properties:
+        checklist:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              date:
+                type: integer
+                format: int64
+                description: Epoch ms
+              status:
+                type: string
+                enum:
+                - completado
+                - pendiente
+    CriterionScore:
+      type: object
+      properties:
+        name:
+          type: string
+        score:
+          type: number
+        max:
+          type: number
+        percent:
+          type: integer
+        level:
+          type: string
+          example: Bueno
+        type:
+          type: string
+          enum:
+          - success
+          - warning
+          - alert
+    FeedbackInput:
+      type: object
+      required:
+      - professor
+      properties:
+        ai:
+          type: string
+        professor:
+          type: string
+    RealtimeTokenResponse:
+      type: object
+      required:
+      - url
+      - expiresAt
+      properties:
+        url:
+          type: string
+          description: URL WebSocket directa para conectar al cliente con Azure Web PubSub
+          example: wss://revisatec-pubsub.webpubsub.azure.com/client/hubs/notifications?access_token=eyJ...
+        expiresAt:
+          type: integer
+          format: int64
+          description: Epoch timestamp en milisegundos indicando cuándo expira el token
+          example: 1792000000000
+    Notification:
+      type: object
+      required:
+      - id
+      - type
+      - title
+      - message
+      - courseId
+      - groupId
+      - createdAt
+      - read
+      - source
+      properties:
+        id:
+          type: string
+          example: 3fa85f64-5717-4562-b3fc-2c963f66afa6
+        type:
+          type: string
+          enum:
+          - FEEDBACK_PUBLISHED
+          - ISSUE_DETECTED
+          example: FEEDBACK_PUBLISHED
+        title:
+          type: string
+          example: Retroalimentación de Hito 1
+        message:
+          type: string
+          example: Se ha publicado la evaluación del grupo 2
+        courseId:
+          type: integer
+          example: 1
+        groupId:
+          type: integer
+          example: 2
+        createdAt:
+          type: integer
+          format: int64
+          description: Epoch timestamp en milisegundos
+          example: 1729000000000
+        read:
+          type: boolean
+          example: false
+        source:
+          type: string
+          example: ms-analysis
+    NotificationPage:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        pageSize:
+          type: integer
+          example: 20
+        totalRecords:
+          type: integer
+          example: 45
+        totalPages:
+          type: integer
+          example: 3
+        unreadCount:
+          type: integer
+          example: 5
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+    Course:
+      type: object
+      required:
+      - id
+      - name
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          minLength: 1
+          example: Matemática
+    CourseInput:
+      type: object
+      required:
+      - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          example: Matemática
+    CoursePage:
+      type: object
+      properties:
+        totalRecords:
+          type: integer
+          example: 2
+        page:
+          type: integer
+          example: 1
+        pageSize:
+          type: integer
+          example: 10
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Course'
+    Group:
+      type: object
+      required:
+      - id
+      - name
+      - repoUrl
+      - avance
+      - estado
+      - courseId
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 3
+        name: &id001
+          type: string
+          minLength: 1
+          example: Grupo A
+        repoUrl: &id002
+          type: string
+          format: uri
+          description: URL absoluta con esquema http o https.
+          example: https://github.com/example/group-a
+        avance: &id003
+          type: integer
+          minimum: 0
+          maximum: 100
+          default: 0
+          example: 40
+        estado: &id004
+          type: string
+          enum: &id006
+          - Pendiente
+          - En progreso
+          - Completado
+          example: En progreso
+          default: Pendiente
+        courseId: &id005
+          type: integer
+          format: int64
+          minimum: 1
+          example: 1
+    GroupCreate:
+      type: object
+      required:
+      - name
+      - repoUrl
+      - courseId
+      properties:
+        name: *id001
+        repoUrl: *id002
+        avance: *id003
+        estado: *id004
+        courseId: *id005
+    GroupUpdate:
+      type: object
+      required:
+      - name
+      - repoUrl
+      - avance
+      - estado
+      properties:
+        name:
+          type: string
+          minLength: 1
+          example: Grupo A
+        repoUrl: *id002
+        avance:
+          type: integer
+          minimum: 0
+          maximum: 100
+          example: 40
+        estado:
+          type: string
+          enum: *id006
+          example: En progreso
+        courseId:
+          type: integer
+          format: int64
+          minimum: 1
+          description: Si se omite, se conserva el curso actual.
+          example: 1
+    GroupPage:
+      type: object
+      properties:
+        totalRecords:
+          type: integer
+          example: 2
+        page:
+          type: integer
+          example: 1
+        pageSize:
+          type: integer
+          example: 10
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Group'
+    CalendarEvent:
+      type: object
+      required:
+      - id
+      - title
+      - date
+      - audience
+      - type
+      - courseId
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 5
+        title: &id007
+          type: string
+          minLength: 1
+          example: Entrega final
+        date: &id008
+          type: integer
+          format: int64
+          minimum: 1
+          description: Epoch en milisegundos (UTC); no se convierte de zona horaria.
+          example: 1792670400000
+        audience: &id009
+          type: string
+          minLength: 1
+          example: Todos los grupos
+        type: &id010
+          type: string
+          enum: &id012
+          - blue
+          - green
+          - amber
+          example: blue
+          default: blue
+        courseId: &id011
+          type: integer
+          format: int64
+          minimum: 1
+          example: 1
+    CalendarEventCreate:
+      type: object
+      required:
+      - title
+      - date
+      - audience
+      - courseId
+      properties:
+        title: *id007
+        date: *id008
+        audience: *id009
+        type: *id010
+        courseId: *id011
+    CalendarEventUpdate:
+      type: object
+      required:
+      - title
+      - date
+      - audience
+      - type
+      properties:
+        title: *id007
+        date: *id008
+        audience: *id009
+        type:
+          type: string
+          enum: *id012
+          example: blue
+        courseId:
+          type: integer
+          format: int64
+          minimum: 1
+          description: Si se omite, se conserva el curso actual.
+          example: 1
+    CalendarEventPage:
+      type: object
+      properties:
+        totalRecords:
+          type: integer
+          example: 2
+        page:
+          type: integer
+          example: 1
+        pageSize:
+          type: integer
+          example: 10
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CalendarEvent'
+    Message:
+      type: object
+      required:
+      - message
+      properties:
+        message:
+          type: string
+          example: Evento eliminado
