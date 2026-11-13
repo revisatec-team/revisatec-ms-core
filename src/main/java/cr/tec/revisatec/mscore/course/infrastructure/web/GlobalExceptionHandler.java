@@ -3,12 +3,15 @@ package cr.tec.revisatec.mscore.course.infrastructure.web;
 import cr.tec.revisatec.mscore.course.domain.CourseNotFoundException;
 import cr.tec.revisatec.mscore.course.domain.CourseAssociationNotFoundException;
 import cr.tec.revisatec.mscore.group.domain.GroupNotFoundException;
+import cr.tec.revisatec.mscore.member.domain.DuplicateMemberException;
+import cr.tec.revisatec.mscore.member.domain.MemberNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
@@ -33,6 +36,24 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleGroupNotFound(GroupNotFoundException exception) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(new ErrorResponse(exception.getMessage()));
+    }
+
+    @ExceptionHandler(MemberNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleMemberNotFound(MemberNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse(exception.getMessage()));
+    }
+
+    @ExceptionHandler(DuplicateMemberException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateMember(DuplicateMemberException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ErrorResponse(exception.getMessage()));
+    }
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ErrorResponse> handleMissingParameter(MissingServletRequestParameterException exception) {
+        return ResponseEntity.badRequest()
+                .body(new ErrorResponse(exception.getParameterName() + " es obligatorio"));
     }
 
     @ExceptionHandler({

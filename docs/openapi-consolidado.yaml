@@ -15,6 +15,7 @@ tags:
 - name: MS1 · Courses
 - name: MS1 · Groups
 - name: MS1 · Calendar
+- name: MS1 · Members
 - name: MS2 · Course configuration
 - name: MS2 · Group analysis
 - name: MS2 · Feedback
@@ -496,6 +497,167 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /groups/{groupId}/members:
+    parameters:
+    - name: groupId
+      in: path
+      required: true
+      description: Identificador del grupo
+      schema:
+        type: integer
+        format: int64
+        minimum: 1
+    get:
+      tags:
+      - MS1 · Members
+      summary: Listar integrantes de un grupo
+      operationId: listGroupMembers
+      responses:
+        '200':
+          description: Integrantes del grupo ordenados por nombre
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupMemberList'
+              example:
+                groupId: 7
+                totalRecords: 1
+                members:
+                - id: 12
+                  groupId: 7
+                  name: Ana Mora
+                  email: ana.mora@estudiantec.cr
+                  githubUser: anamora
+                  createdAt: 1762905600000
+        '404':
+          description: Grupo no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Grupo con id 99 no encontrado
+    post:
+      tags:
+      - MS1 · Members
+      summary: Agregar un integrante al grupo
+      description: El correo se guarda en minúsculas y no puede repetirse en otro grupo del mismo curso.
+      operationId: addGroupMember
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupMemberCreate'
+            example:
+              name: Ana Mora
+              email: ana.mora@estudiantec.cr
+              githubUser: anamora
+      responses:
+        '201':
+          description: Integrante agregado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupMember'
+        '400':
+          description: Datos inválidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: El correo del integrante no es válido
+        '404':
+          description: Grupo no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: El correo ya pertenece a un grupo del mismo curso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: El correo ana.mora@estudiantec.cr ya pertenece a un grupo de este curso
+  /groups/{groupId}/members/{memberId}:
+    delete:
+      tags:
+      - MS1 · Members
+      summary: Quitar un integrante del grupo
+      operationId: removeGroupMember
+      parameters:
+      - name: groupId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+      - name: memberId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+      responses:
+        '200':
+          description: Integrante eliminado; respuesta sin cuerpo
+        '404':
+          description: Grupo o integrante no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: Integrante con id 99 no encontrado en el grupo 7
+  /members/me:
+    get:
+      tags:
+      - MS1 · Members
+      summary: Obtener el grupo del estudiante en un curso
+      description: Busca por el correo del login (Google). El backend no valida el token; ver limitaciones de seguridad.
+      operationId: getMyGroupAssignment
+      parameters:
+      - name: email
+        in: query
+        required: true
+        schema:
+          type: string
+          format: email
+      - name: courseId
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+          minimum: 1
+      responses:
+        '200':
+          description: Integrante y grupo asignado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemberAssignment'
+        '400':
+          description: Falta email o courseId
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: email es obligatorio
+        '404':
+          description: El estudiante no está asignado a un grupo del curso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                error: El estudiante no está asignado a un grupo del curso 5
   /courses/{id}/rubric:
     parameters:
     - $ref: '#/components/parameters/id'
@@ -1562,3 +1724,78 @@ components:
         message:
           type: string
           example: Evento eliminado
+    GroupMember:
+      type: object
+      required:
+      - id
+      - groupId
+      - name
+      - email
+      - createdAt
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 12
+        groupId:
+          type: integer
+          format: int64
+          example: 7
+        name:
+          type: string
+          minLength: 1
+          example: Ana Mora
+        email:
+          type: string
+          format: email
+          example: ana.mora@estudiantec.cr
+        githubUser:
+          type: string
+          nullable: true
+          example: anamora
+        createdAt:
+          type: integer
+          format: int64
+          description: Epoch en milisegundos
+          example: 1762905600000
+    GroupMemberCreate:
+      type: object
+      required:
+      - name
+      - email
+      properties:
+        name:
+          type: string
+          minLength: 1
+        email:
+          type: string
+          format: email
+        githubUser:
+          type: string
+          nullable: true
+    GroupMemberList:
+      type: object
+      required:
+      - groupId
+      - totalRecords
+      - members
+      properties:
+        groupId:
+          type: integer
+          format: int64
+        totalRecords:
+          type: integer
+        members:
+          type: array
+          items:
+            $ref: '#/components/schemas/GroupMember'
+    MemberAssignment:
+      type: object
+      required:
+      - member
+      - group
+      properties:
+        member:
+          $ref: '#/components/schemas/GroupMember'
+        group:
+          $ref: '#/components/schemas/Group'
