@@ -7,6 +7,7 @@ import cr.tec.revisatec.mscore.group.application.port.in.GroupUseCase;
 import cr.tec.revisatec.mscore.group.application.port.out.GroupRepositoryPort;
 import cr.tec.revisatec.mscore.group.domain.Group;
 import cr.tec.revisatec.mscore.group.domain.GroupNotFoundException;
+import cr.tec.revisatec.mscore.member.application.port.out.GroupMemberRepositoryPort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,10 +19,15 @@ public class GroupService implements GroupUseCase {
 
     private final GroupRepositoryPort groupRepository;
     private final CourseRepositoryPort courseRepository;
+    private final GroupMemberRepositoryPort memberRepository;
 
-    public GroupService(GroupRepositoryPort groupRepository, CourseRepositoryPort courseRepository) {
+    public GroupService(
+            GroupRepositoryPort groupRepository,
+            CourseRepositoryPort courseRepository,
+            GroupMemberRepositoryPort memberRepository) {
         this.groupRepository = groupRepository;
         this.courseRepository = courseRepository;
+        this.memberRepository = memberRepository;
     }
 
     @Override
@@ -71,6 +77,7 @@ public class GroupService implements GroupUseCase {
     @Override
     public void deleteGroup(Long id) {
         findGroup(id);
+        memberRepository.deleteByGroupId(id);
         groupRepository.deleteById(id);
     }
 
