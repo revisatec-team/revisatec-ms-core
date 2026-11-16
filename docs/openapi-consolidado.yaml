@@ -927,6 +927,24 @@ paths:
                 $ref: '#/components/schemas/Analysis'
         '404':
           $ref: '#/components/responses/NotFound'
+  /groups/{id}/contributions:
+    parameters:
+    - $ref: '#/components/parameters/id'
+    get:
+      tags:
+      - MS2 · Group analysis
+      summary: Aporte por integrante del grupo
+      description: Commits, pull requests y revisiones de cada integrante, con el porcentaje sobre los commits del grupo.
+      operationId: getGroupContributions
+      responses:
+        '200':
+          description: Aporte por integrante
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupContributions'
+        '404':
+          $ref: '#/components/responses/NotFound'
   /groups/{id}/progress-summary:
     parameters:
     - $ref: '#/components/parameters/id'
@@ -1167,6 +1185,37 @@ paths:
                 $ref: '#/components/schemas/Error'
       tags:
       - MS3 · Notifications
+  /notifications/read-all:
+    patch:
+      tags:
+      - MS3 · Notifications
+      summary: Marcar todas las notificaciones como leídas
+      description: Marca como leídas todas las notificaciones visibles para el usuario, filtradas opcionalmente por cursos y grupos.
+      operationId: markAllNotificationsAsRead
+      parameters:
+      - name: courseIds
+        in: query
+        required: false
+        description: Lista de cursos separada por comas
+        schema:
+          type: string
+      - name: groupIds
+        in: query
+        required: false
+        description: Lista de grupos separada por comas
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Cantidad de notificaciones actualizadas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  updatedCount:
+                    type: integer
+                    example: 4
   /notifications/{id}/read:
     patch:
       summary: Marcar notificación como leída
@@ -1623,6 +1672,41 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Notification'
+    MemberContribution:
+      type: object
+      properties:
+        githubUser:
+          type: string
+          example: ana-rojas
+        commits:
+          type: integer
+          example: 21
+        prs:
+          type: integer
+          example: 4
+        reviews:
+          type: integer
+          example: 3
+        percent:
+          type: integer
+          description: Porcentaje de los commits del grupo
+          example: 70
+    GroupContributions:
+      type: object
+      properties:
+        groupId:
+          type: integer
+          example: 7
+        totalCommits:
+          type: integer
+          example: 30
+        totalPrs:
+          type: integer
+          example: 6
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MemberContribution'
     Course:
       type: object
       required:
